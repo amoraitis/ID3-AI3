@@ -17,9 +17,9 @@ public class DecisionTree {
       boolean[] usedAttributes) {
     int sameCategory = 0;
     if (examples.isEmpty()) {
-      return null;
+      return new DecisionTreeNode("no", -1);
     } else if (checkSameCategory(examples, sameCategory)) {
-      return sameCategory == 1 ? null : null;
+      return sameCategory == 1 ? new DecisionTreeNode("yes", -1) : new DecisionTreeNode("no", -1);
     } else if (attributes.length == 0) {
       return findFrequently(examples, 0) >= 0.5 ? null : null;
     } else {
@@ -96,6 +96,18 @@ public class DecisionTree {
 
     return (sum * 1.0) / (examples.size() * 1.0);
   }
+  
+  /**
+   * @param examples
+   * @param attr attribute to find probability
+   * @param value of attribute
+   * @return the probability to find 1(positive examples while a category/attribute==value in the examples
+   */
+  private double findFrequently(List<Integer[]> examples, int attr, int value) {
+    int sum = examples.stream().filter((Integer[] val)-> val[attr]==value).map((Integer[] a) -> a[0]).mapToInt(Integer::intValue).sum();
+
+    return (sum * 1.0) / (examples.size() * 1.0);
+  }
 
   private DecisionTreeNode maketree(List<Integer[]> examples, boolean[] usedAttributes) {
     // TODO Auto-generated method stub
@@ -126,12 +138,31 @@ public class DecisionTree {
     return result;
   }
 
-  private double IG(List<Integer[]> examples, String[] attributes, int attr) {
+  private double entropy(List<Integer[]> examples, String[] attributes, int attr, int value) {
     double ig=0;
-    double p=findFrequently(examples, attr)*examples.size();
+    double p=findFrequently(examples, attr, value)*examples.size();
     double n = examples.size()-p;
     ig = (p/(p+n))*Math.log((p/(p+n)))/Math.log(2) + (n/(p+n))*Math.log(n/(p+n))/Math.log(2);
     return ig;
   }
+  
+  private double entropy(List<Integer[]> examples, String[] attributes) {
+	    double ig=0;
+	    double p=findFrequently(examples, 0)*examples.size();
+	    double n = examples.size()-p;
+	    ig = (p/(p+n))*Math.log((p/(p+n)))/Math.log(2) + (n/(p+n))*Math.log(n/(p+n))/Math.log(2);
+	    return ig;
+	  }
+  
+  private double IG(List<Integer[]> examples, String[] attributes, int attr) {
+	    double ig=0;
+	    double p=findFrequently(examples, attr)*examples.size();
+	    //ig = entropy(examples, attributes);// - (p/(p+n))*Math.log((p/(p+n)))/Math.log(2) + (n/(p+n))*Math.log(n/(p+n))/Math.log(2);
+	    ig = entropy(examples, attributes)
+	    		- p*entropy(examples, attributes, attr, 1)
+	    		-(1-p)*entropy(examples, attributes, attr, 0);
+	    
+	    return ig;
+	  }
   
 }

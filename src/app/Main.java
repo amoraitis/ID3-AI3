@@ -36,6 +36,8 @@ public class Main {
 		DecisionTree dTree = new DecisionTree();
 		boolean[] usedAttributes = new boolean[attributes.length];
 		Arrays.fill(usedAttributes, false);
+		Arrays.asList(attributes).remove(attributes[0]);
+		System.out.println(attributes[0]);
 		dTree.ID3(trainData, attributes, dTree.hightestIG(trainData, attributes).values().parallelStream().findFirst().get(),usedAttributes);
 		dTree.print(dTree.root, 0);
 		//testData.forEach(System.out::println);
