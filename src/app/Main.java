@@ -1,13 +1,10 @@
 //Data source http://archive.ics.uci.edu/ml/datasets/Abalone
 package app;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.IntFunction;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.javatuples.Pair;
@@ -27,49 +24,35 @@ public class Main {
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Give train filename:");
-		String trainDataFile = "SPECT.train"; //sc.nextLine();
+		String trainDataFile = "train.dat"; //sc.nextLine();
 		System.out.println("Give test filename:");
-		String testDataFile = "SPECT1.test"; //sc.nextLine();
+		String testDataFile = "train50.dat"; //sc.nextLine();
 		ArrayList<Integer[]> trainData = importData(trainDataFile);
 		categorials = new ArrayList<>();
 		ArrayList<Integer[]> testData = importData(testDataFile);
-		Arrays.asList(trainData.get(0)).forEach((Integer a)->System.out.print(a+","));
 		System.out.println();
-		ArrayList<Integer[]> tmp = new ArrayList<>();
-		for (Integer[] a : trainData) {
-			categorials.add(a[0]);
-			a = Arrays.copyOfRange(a, 1, a.length);
-			tmp.add(a);
-		}
-		trainData = tmp;
 		
-		Arrays.asList(trainData.get(0)).forEach((Integer a)->System.out.print(a+","));
-		DecisionTree dTree = new DecisionTree(attributes, categorials);
-		Pair<String, Boolean>[] usedAttributes = new Pair[attributes.length];
-		for(int i=0; i<attributes.length; i++){
-			usedAttributes[i] = new Pair<String, Boolean>(attributes[i], false);
-		}
 		String[] nonCategorialAttributes = new String[attributes.length-1];
 		for(int i=0; i<attributes.length-1; i++)nonCategorialAttributes[i]=attributes[i+1];
-		
+		Pair<String, Boolean>[] usedAttributes = new Pair[nonCategorialAttributes.length];
+		for(int i=0; i<nonCategorialAttributes.length; i++){
+			usedAttributes[i] = new Pair<String, Boolean>(nonCategorialAttributes[i], false);
+		}
+		DecisionTree dTree = new DecisionTree(nonCategorialAttributes);
 		DecisionTreeNode root = dTree.ID3(trainData, nonCategorialAttributes, dTree.hightestIG(trainData, nonCategorialAttributes).values().parallelStream().findFirst().get(),usedAttributes);
 		dTree.root = root;
 		dTree.print(dTree.root, "");
-		//testData.forEach(System.out::println);
-		/*testData.forEach((Integer[] val)->{
-			for(int i=0; i<val.length; i++){
-				System.out.print((i==val.length-1? val[i] : val[i]+",")+"");
-			}
-			System.out.println();
-		});*/
-		
+		double accuracy = dTree.accuracy(trainData);
+		System.out.println("\n\nAccuracy in "+trainData.size()+" instances: " + accuracy+"%");
+		accuracy = dTree.accuracy(testData);
+		System.out.println("\n\nAccuracy in "+testData.size()+" instances: " + accuracy+"%");		
 	}
 	
 	private static ArrayList<Integer[]> importData(String filename) throws FileNotFoundException{
 		ArrayList<Integer[]> res = new ArrayList<Integer[]>();
 		Scanner scanner = new Scanner(new FileReader(DATAFOLDER+filename));
 		String line = scanner.nextLine();
-		if(filename.contains("train"))
+		if(filename.contains("train.dat"))
 			attributes= line.trim().split(",");
 		System.out.println(attributes.length);
 		line = scanner.nextLine();

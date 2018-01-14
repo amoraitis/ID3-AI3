@@ -7,16 +7,16 @@ public class DecisionTreeNode {
 	private String tag;
 	private int index, value;
 
-	public DecisionTreeNode(String tag, int value) {
+	public DecisionTreeNode(String tag, int index) {
 		setLeft(null);
 		setRight(null);
-		this.value = value;
+		this.index = index;
 		this.tag = tag;
 		
 	}
 
-	private boolean hasLeaf() {
-		return left == null && right == null;
+	public boolean isSLeaf() {
+		return (left == null && right == null);
 	}
 
 	/** @return the left */
